@@ -1,0 +1,12 @@
+{
+    "name": "com.bx.tween",
+    "version": "1.0.1",
+    "displayName": "BXSTween",
+    "description": "C# Tweening Engine",
+    "dependencies": {},
+    "author": {
+        "name": "B3X",
+        "email": "b3x2088@gmail.com",
+        "url": "https://github.com/b3x206/"
+    }
+}

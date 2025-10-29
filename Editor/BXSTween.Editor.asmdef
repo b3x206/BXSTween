@@ -1,0 +1,25 @@
+{
+    "name": "BXSTween.Editor",
+    "rootNamespace": "",
+    "references": [
+        "BXSTween",
+        "BX.SearchDropdown"
+    ],
+    "includePlatforms": [
+        "Editor"
+    ],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "versionDefines": [
+        {
+            "name": "com.bx.searchdropdown",
+            "expression": "1.0.0",
+            "define": "BX_SEARCH_DROPDOWN"
+        }
+    ],
+    "noEngineReferences": false
+}
