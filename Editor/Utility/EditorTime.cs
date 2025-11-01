@@ -2,13 +2,13 @@
 using System;
 using UnityEditor;
 
-namespace BX.Tweening.Editor.Internal
+namespace BX.Tweening.Editor
 {
     /// <summary>
     /// Manages editor related timing.
-    /// <br>(Mainly deltaTime stuff)</br>
+    /// <br>This isn't generally used outside of the optional extension of BX_SEARCH_DROPDOWN</br>
     /// </summary>
-    public static class EditorTime
+    internal static class EditorTime
     {
         /// <summary>
         /// Last <see cref="EditorApplication.timeSinceStartup"/> on the <see cref="EditorApplication.update"/>.

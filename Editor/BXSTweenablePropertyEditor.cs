@@ -1,5 +1,4 @@
 #if UNITY_EDITOR
-using BX.Tweening.Editor.Internal;
 using System;
 using System.Collections.Generic;
 using UnityEditor;
@@ -24,7 +23,7 @@ namespace BX.Tweening.Editor
     [CustomPropertyDrawer(typeof(BXSTweenable), true)]
     public class BXSTweenablePropertyEditor : PropertyDrawer
     {
-        protected readonly PropertyRectContext ctx = new(2);
+        internal readonly PropertyRectContext ctx = new(2);
 
         /// <summary>
         /// This method allows for copying and iterating a given <see cref="SerializedProperty"/>.
@@ -137,7 +136,7 @@ namespace BX.Tweening.Editor
             if (child.name == "m_Delay") // [Clamp(0f, float.Max)]
             {
                 child.floatValue = EditorGUI.FloatField(
-                    ctx.GetPropertyRect(parentPos, EditorGUIUtility.singleLineHeight),
+                    ctx.GetRect(parentPos, EditorGUIUtility.singleLineHeight),
                     "Delay",
                     Math.Clamp(child.floatValue, 0f, float.MaxValue)
                 );
@@ -145,7 +144,7 @@ namespace BX.Tweening.Editor
             else if (child.name == "m_Duration") // [Clamp(0f, float.Max)]
             {
                 child.floatValue = EditorGUI.FloatField(
-                    ctx.GetPropertyRect(parentPos, EditorGUIUtility.singleLineHeight),
+                    ctx.GetRect(parentPos, EditorGUIUtility.singleLineHeight),
                     "Duration",
                     Math.Clamp(child.floatValue, 0f, float.MaxValue)
                 );
@@ -153,7 +152,7 @@ namespace BX.Tweening.Editor
             else if (child.name == "m_LoopCount") // [Clamp(-1, int.Max)]
             {
                 child.intValue = EditorGUI.IntField(
-                    ctx.GetPropertyRect(parentPos, EditorGUIUtility.singleLineHeight),
+                    ctx.GetRect(parentPos, EditorGUIUtility.singleLineHeight),
                     "Loop Count",
                     Math.Clamp(child.intValue, -1, int.MaxValue)
                 );
@@ -161,7 +160,7 @@ namespace BX.Tweening.Editor
             else if (child.name == "m_Speed") // [Clamp(0, 65535f)]
             {
                 child.floatValue = EditorGUI.FloatField(
-                    ctx.GetPropertyRect(parentPos, EditorGUIUtility.singleLineHeight),
+                    ctx.GetRect(parentPos, EditorGUIUtility.singleLineHeight),
                     "Speed",
                     Math.Clamp(child.floatValue, 0f, 65535f)
                 );
@@ -172,7 +171,7 @@ namespace BX.Tweening.Editor
                 {
                     // Assign value on boolean toggle for curve use
                     bool prevValue = child.boolValue;
-                    EditorGUI.PropertyField(ctx.GetPropertyRect(parentPos, child), child);
+                    EditorGUI.PropertyField(ctx.GetRect(parentPos, child), child);
                     if (prevValue != child.boolValue && child.boolValue)
                     {
                         using SerializedProperty curveProperty = parent.FindPropertyRelative("m_EaseCurve");
@@ -184,7 +183,7 @@ namespace BX.Tweening.Editor
                 }
                 else
                 {
-                    EditorGUI.PropertyField(ctx.GetPropertyRect(parentPos, child), child);
+                    EditorGUI.PropertyField(ctx.GetRect(parentPos, child), child);
                 }
             }
 
@@ -196,7 +195,7 @@ namespace BX.Tweening.Editor
         {
             ctx.Reset();
             label = EditorGUI.BeginProperty(position, label, property);
-            property.isExpanded = EditorGUI.Foldout(ctx.GetPropertyRect(position, EditorGUIUtility.singleLineHeight), property.isExpanded, label);
+            property.isExpanded = EditorGUI.Foldout(ctx.GetRect(position, EditorGUIUtility.singleLineHeight), property.isExpanded, label);
 
             if (!property.isExpanded)
             {

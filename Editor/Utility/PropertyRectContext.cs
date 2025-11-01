@@ -1,14 +1,80 @@
 #if UNITY_EDITOR
-using UnityEngine;
+using System;
 using UnityEditor;
+using UnityEngine;
 
-namespace BX.Tweening.Editor.Internal
+namespace BX.Tweening.Editor
 {
     /// <summary>
-    /// A simpler way to get <see cref="PropertyDrawer"/>'s rects seperated with given height and padding (similar to <see cref="GUILayout"/> without using it)
-    /// <br>This is an internal utility class and should be copied and pasted or be used within the inheriting classes.</br>
+    /// Vertical <see cref="UnityEngine.Rect"/> context that can be implicitly <see cref="UnityEngine.Rect"/>
+    /// <br>Used for convenience and horizontal tiling.</br>
     /// </summary>
-    public sealed class PropertyRectContext
+    internal struct HorizontalRectContext : IEquatable<Rect>
+    {
+        private Rect m_Rect;
+        public readonly Rect Rect => m_Rect;
+
+        /// <inheritdoc cref="GetRemaining(int)"/>
+        public readonly float Remaining => GetRemaining();
+        /// <summary>
+        /// Remaining size of the base <see cref="Rect"/>.
+        /// <br>Compare this to be equal to zero or less than zero to check if this context is complete.</br>
+        /// </summary>
+        public readonly float GetRemaining(int marginCount = 1)
+        {
+            return m_Rect.width - (xCurrent + (marginCount * xMargin));
+        }
+
+        public float xCurrent;
+        public float xMargin;
+        public void Reset()
+        {
+            xCurrent = 0f;
+        }
+        public Rect GetRect(float width)
+        {
+            var baseRect = new Rect(m_Rect.x, m_Rect.y, width, m_Rect.height);
+            baseRect.x += xCurrent + (xMargin / 2f);
+            xCurrent += width + xMargin;
+
+            return baseRect;
+        }
+        public Rect PeekRect(float width)
+        {
+            var baseRect = new Rect(m_Rect.x, m_Rect.y, width, m_Rect.height);
+            baseRect.x += xCurrent + (xMargin / 2f);
+
+            return baseRect;
+        }
+
+        public HorizontalRectContext(Rect rect, float margin)
+        {
+            m_Rect = rect;
+            xCurrent = 0f;
+            xMargin = margin;
+        }
+
+        // This is implicit so that i don't have to change the code
+        // + Usually horizontal space isn't used often, vertical space is used more within editors
+        public static implicit operator Rect(HorizontalRectContext c)
+        {
+            return c.m_Rect;
+        }
+        public static implicit operator HorizontalRectContext(Rect r)
+        {
+            return new HorizontalRectContext(r, 1f);
+        }
+
+        public bool Equals(Rect other)
+        {
+            return m_Rect.Equals(other);
+        }
+    }
+
+    /// <summary>
+    /// A simpler way to get <see cref="PropertyDrawer"/>'s rects seperated with given height and padding (similar to <see cref="GUILayout"/> without using it)
+    /// </summary>
+    internal sealed class PropertyRectContext
     {
         /// <summary>
         /// The current Y elapsed for this rect context.
@@ -16,52 +82,56 @@ namespace BX.Tweening.Editor.Internal
         /// </summary>
         public float CurrentY => m_CurrentY;
         /// <inheritdoc cref="CurrentY"/>
-        private float m_CurrentY = 0f;
+        private float m_CurrentY;
 
         /// <summary>
-        /// The given singular Y axis margin.
+        /// Y axis margin. Applies up and down.
         /// </summary>
-        public float YMargin = 2f;
+        public float YMargin { get; set; } = 2f;
+        /// <summary>
+        /// X axis margin. Applies left and right.
+        /// </summary>
+        public float XMargin { get; set; } = 1f;
 
         /// <summary>
         /// Returns the <paramref name="property"/>'s rect.
         /// (by getting the height with <see cref="EditorGUI.GetPropertyHeight(SerializedProperty)"/>)
         /// </summary>
-        public Rect GetPropertyRect(Rect baseRect, SerializedProperty property)
+        public HorizontalRectContext GetRect(Rect baseRect, SerializedProperty property)
         {
-            return GetPropertyRect(baseRect, EditorGUI.GetPropertyHeight(property));
+            return GetRect(baseRect, EditorGUI.GetPropertyHeight(property));
         }
         /// <summary>
         /// Returns the base target rect.
         /// </summary>
-        public Rect GetPropertyRect(Rect baseRect, float height)
+        public HorizontalRectContext GetRect(Rect baseRect, float height)
         {
             baseRect.height = height;                  // set to target height
             baseRect.y += m_CurrentY + (YMargin / 2f); // offset by Y
             m_CurrentY += height + YMargin;            // add Y offset
 
-            return baseRect;
+            return new HorizontalRectContext(baseRect, XMargin);
         }
 
         /// <summary>
         /// Returns the next target rect for <paramref name="property"/> that is going to have it's height pushed.
-        /// <br>This DOES NOT move the <see cref="CurrentY"/> in any way, use <see cref="GetPropertyRect(Rect, float)"/>.</br>
+        /// <br>This DOES NOT move the <see cref="CurrentY"/> in any way, use <see cref="GetRect(Rect, float)"/>.</br>
         /// </summary>
-        public Rect PeekPropertyRect(Rect baseRect, SerializedProperty property)
+        public HorizontalRectContext PeekRect(Rect baseRect, SerializedProperty property)
         {
-            return PeekPropertyRect(baseRect, EditorGUI.GetPropertyHeight(property));
+            return PeekRect(baseRect, EditorGUI.GetPropertyHeight(property));
         }
         /// <summary>
         /// Returns the next target rect that is going to have it's height pushed.
-        /// <br>This DOES NOT move the <see cref="CurrentY"/> in any way, use <see cref="GetPropertyRect(Rect, float)"/>.</br>
+        /// <br>This DOES NOT move the <see cref="CurrentY"/> in any way, use <see cref="GetRect(Rect, float)"/>.</br>
         /// </summary>
-        public Rect PeekPropertyRect(Rect baseRect, float height)
+        public HorizontalRectContext PeekRect(Rect baseRect, float height)
         {
             baseRect.height = height;                  // set to target height
             baseRect.y += m_CurrentY + (YMargin / 2f); // offset by Y
             // don't offset Y as this is a peek.
 
-            return baseRect;
+            return new HorizontalRectContext(baseRect, XMargin);
         }
 
         /// <summary>
@@ -80,11 +150,19 @@ namespace BX.Tweening.Editor.Internal
         public PropertyRectContext()
         { }
         /// <summary>
-        /// Creates a PropertyRectContext where the <see cref="YMargin"/> is the given parameter <paramref name="margin"/>.
+        /// Creates a PropertyRectContext where the <see cref="YMargin"/> is the given parameter <paramref name="yMargin"/>.
         /// </summary>
-        public PropertyRectContext(float margin)
+        public PropertyRectContext(float yMargin)
         {
-            YMargin = margin;
+            YMargin = yMargin;
+        }
+        /// <summary>
+        /// Creates a PropertyRectContext where the <see cref="YMargin"/> is the given parameter <paramref name="ymargin"/>.
+        /// </summary>
+        public PropertyRectContext(float xMargin, float yMargin)
+        {
+            XMargin = xMargin;
+            YMargin = yMargin;
         }
 
         /// <summary>

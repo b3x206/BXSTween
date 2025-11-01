@@ -62,7 +62,7 @@ namespace BX.Tweening.Editor
             ctx.Reset();
             label = EditorGUI.BeginProperty(position, label, property);
 
-            property.isExpanded = EditorGUI.Foldout(ctx.GetPropertyRect(position, EditorGUIUtility.singleLineHeight), property.isExpanded, label);
+            property.isExpanded = EditorGUI.Foldout(ctx.GetRect(position, EditorGUIUtility.singleLineHeight), property.isExpanded, label);
 
             if (!property.isExpanded)
             {

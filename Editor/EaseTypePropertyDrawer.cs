@@ -6,7 +6,6 @@ using UnityEditor;
 #if BX_SEARCH_DROPDOWN
 using BX.Editor;
 #endif
-using BX.Tweening.Editor.Internal;
 using BX.Tweening.Utility;
 using UnityEditor.IMGUI.Controls;
 
@@ -271,7 +270,7 @@ namespace BX.Tweening.Editor
 
             label = EditorGUI.BeginProperty(position, label, property);
 
-            Rect paddedPosition = mainCtx.GetPropertyRect(position, EditorGUIUtility.singleLineHeight);
+            Rect paddedPosition = mainCtx.GetRect(position, EditorGUIUtility.singleLineHeight);
             Rect labelPosition = new Rect(paddedPosition)
             {
                 width = EditorGUIUtility.labelWidth,
@@ -349,7 +348,7 @@ namespace BX.Tweening.Editor
             // active element on keyboard navigation, change the ease value up/down. This will help with selecting ease.
             if (EmbedEasePlot)
             {
-                Rect plotViewRect = mainCtx.GetPropertyRect(position, EasePlotViewSize.y);
+                Rect plotViewRect = mainCtx.GetRect(position, EasePlotViewSize.y);
                 // Move right
                 plotViewRect.x += position.width - EasePlotViewSize.x;
                 plotViewRect.width = EasePlotViewSize.x;

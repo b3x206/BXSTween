@@ -10,7 +10,7 @@ The demos show how I use my own system, which is usually to schedule and do simp
 
 <sup>\^</sup>2 : Only the [BXSTween/Core directory](./Core) is eligible.
 [Editor tooling](./Editor) can be ported but can take significantly more time, if the framework is unsuitable (for example, no IMGUI or generic serialization interface).
-Also, a timed loop (delta time/frame) is required and nullability is enabled (for this project) for running the tweener. <br/>
+Also, a timed loop (delta time/frame) is required and explicit nullability is disabled (for this project) for running the tweener. <br/>
 
 <sup>\^</sup>3 : `System.Numerics`, `System.Collections`, `System.Collections.Generic` and some `System` namespaced libraries are the dependencies. Only one that may not exist in your context could be `System.Numerics`, but it is unlikely.
 
