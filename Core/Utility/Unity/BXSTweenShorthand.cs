@@ -20,7 +20,15 @@ namespace BX.Tweening
         // (basically a straight port from coroutine tween days where i used to have few shorthands)
 
         [ThreadStatic]
-        private static readonly Random rng = new Random();
+        private static Random s_rng = new Random();
+        private static Random Rng
+        {
+            get
+            {
+                s_rng ??= new Random();
+                return s_rng;
+            }
+        }
 
         // Transform
         /// <summary>
@@ -648,7 +656,7 @@ namespace BX.Tweening
 
                 for (int i = 0; i < shakes.Length; i++)
                 {
-                    shakes[i] = (((float)rng.NextDouble()) - 0.5f) * 2f;
+                    shakes[i] = (((float)Rng.NextDouble()) - 0.5f) * 2f;
                 }
 
                 switch (space)
@@ -722,9 +730,9 @@ namespace BX.Tweening
                                 }
 
                                 Vector3 pos = transform.position;
-                                pos.x = startPos.x + (magnitude.x * (((float)rng.NextDouble()) - 0.5f) * 2f);
-                                pos.y = startPos.y + (magnitude.y * (((float)rng.NextDouble()) - 0.5f) * 2f);
-                                pos.z = startPos.z + (magnitude.z * (((float)rng.NextDouble()) - 0.5f) * 2f);
+                                pos.y = startPos.y + (magnitude.y * (((float)Rng.NextDouble()) - 0.5f) * 2f);
+                                pos.x = startPos.x + (magnitude.x * (((float)Rng.NextDouble()) - 0.5f) * 2f);
+                                pos.z = startPos.z + (magnitude.z * (((float)Rng.NextDouble()) - 0.5f) * 2f);
 
                                 transform.position = pos;
                             });
@@ -743,9 +751,9 @@ namespace BX.Tweening
                                 }
 
                                 Vector3 pos = transform.localPosition;
-                                pos.x = startPos.x + (magnitude.x * (((float)rng.NextDouble()) - 0.5f) * 2f);
-                                pos.y = startPos.y + (magnitude.y * (((float)rng.NextDouble()) - 0.5f) * 2f);
-                                pos.z = startPos.z + (magnitude.z * (((float)rng.NextDouble()) - 0.5f) * 2f);
+                                pos.x = startPos.x + (magnitude.x * (((float)Rng.NextDouble()) - 0.5f) * 2f);
+                                pos.y = startPos.y + (magnitude.y * (((float)Rng.NextDouble()) - 0.5f) * 2f);
+                                pos.z = startPos.z + (magnitude.z * (((float)Rng.NextDouble()) - 0.5f) * 2f);
 
                                 transform.localPosition = pos;
                             });
