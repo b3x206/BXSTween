@@ -519,10 +519,11 @@ namespace BX.Tweening
         /// Whether if the last run stopped because an exception was thrown.
         /// <br/>
         /// <br>The following cases are considered a failure : </br>
-        /// <br>* Getter or setter failing before playing</br>
+        /// <br>* Getter or setter failing</br>
         /// <br>* No link object</br>
         /// <br>This is not considered a failure : </br>
         /// <br>* <see cref="TickConditionAction"/> returns <see cref="TickSuspendAction.Stop"/></br>
+        /// <br>* Any other event fails (those are ignored)</br>
         /// </summary>
         public bool LastRunFailed { get; protected internal set; }
         // - Status

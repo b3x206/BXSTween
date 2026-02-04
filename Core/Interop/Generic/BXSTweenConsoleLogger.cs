@@ -68,7 +68,7 @@ namespace BX.Tweening.Interop
             {
                 // This method may be used through https://learn.microsoft.com/en-us/dotnet/api/system.appdomain.unhandledexception?view=net-9.0,
                 // so we will not throw. Instead return false if logging fails. We can optionally get stack trace where null was passed.
-                
+
                 if (printStackTraceOnFail)
                 {
                     try

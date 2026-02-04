@@ -85,6 +85,24 @@ namespace BX.Tweening
             ExponentialInOut,
         };
 
+        public static int EaseFunctionsCount => EaseFunctions.Length;
+        /// <summary>
+        /// Get an ease function at index.
+        /// </summary>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static BXSEaseAction GetEaseFunction(int index)
+        {
+            return EaseFunctions[index];
+        }
+        /// <summary>
+        /// Get an ease function matching <paramref name="easing"/>.
+        /// </summary>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static BXSEaseAction GetEaseFunction(EaseType easing)
+        {
+            return EaseFunctions[(int)easing];
+        }
+
         /// The inline version for getting the eased value, without any delegate stuff.
         /// Because the delegate stuff allocates garbage and i have enough garbage in my pc such as my code lol.
         /// <summary>
@@ -96,72 +114,10 @@ namespace BX.Tweening
         /// The corresponding easing to get for this type.
         /// By easing out the time parameter of a unclamped lerp you can get differently animated values.
         /// </param>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static float EasedValue(float time, EaseType easing)
         {
-            BXSEaseAction ease = EaseFunctions[(int)easing];
-            return ease(time);
-            /*
-            switch (easing)
-            {
-                default:
-                case EaseType.Linear:
-                    return Linear(time);
-                case EaseType.QuadIn:
-                    return QuadIn(time);
-                case EaseType.QuadOut:
-                    return QuadOut(time);
-                case EaseType.QuadInOut:
-                    return QuadInOut(time);
-                case EaseType.CubicIn:
-                    return CubicIn(time);
-                case EaseType.CubicOut:
-                    return CubicOut(time);
-                case EaseType.CubicInOut:
-                    return CubicInOut(time);
-                case EaseType.QuartIn:
-                    return QuartIn(time);
-                case EaseType.QuartOut:
-                    return QuartOut(time);
-                case EaseType.QuartInOut:
-                    return QuartInOut(time);
-                case EaseType.QuintIn:
-                    return QuintIn(time);
-                case EaseType.QuintOut:
-                    return QuintOut(time);
-                case EaseType.QuintInOut:
-                    return QuintInOut(time);
-                case EaseType.BounceIn:
-                    return BounceIn(time);
-                case EaseType.BounceOut:
-                    return BounceOut(time);
-                case EaseType.BounceInOut:
-                    return BounceInOut(time);
-                case EaseType.ElasticIn:
-                    return ElasticIn(time);
-                case EaseType.ElasticOut:
-                    return ElasticOut(time);
-                case EaseType.ElasticInOut:
-                    return ElasticInOut(time);
-                case EaseType.CircularIn:
-                    return CircularIn(time);
-                case EaseType.CircularOut:
-                    return CircularOut(time);
-                case EaseType.CircularInOut:
-                    return CircularInOut(time);
-                case EaseType.SinusIn:
-                    return SinusIn(time);
-                case EaseType.SinusOut:
-                    return SinusOut(time);
-                case EaseType.SinusInOut:
-                    return SinusInOut(time);
-                case EaseType.ExponentialIn:
-                    return ExponentialIn(time);
-                case EaseType.ExponentialOut:
-                    return ExponentialOut(time);
-                case EaseType.ExponentialInOut:
-                    return ExponentialInOut(time);
-            }
-            */
+            return EaseFunctions[(int)easing](time);
         }
 
         #region Ease Methods

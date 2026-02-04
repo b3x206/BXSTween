@@ -281,6 +281,7 @@ public sealed class BXSTweenRunner : IBXSTweenLoop
     private readonly BXSTweenTaskDeferrer<BXSTweenable> m_TaskDeferrer = new();
     public BXSTweenTaskDeferrer<BXSTweenable> TaskDeferrer => m_TaskDeferrer;
 
+    // You can also optionally use the BXSTweenProxyLogger with a lambda
     private readonly IBXSTweenLogger m_Logger = new BXSTweenConsoleLogger();
     public IBXSTweenLogger Logger => m_Logger;
 
@@ -330,18 +331,16 @@ public sealed class BXSTweenRunner : IBXSTweenLoop
 public sealed class Cube
 {
     public Vector3 position = Vector3.Zero;
-    public Vector3 size = Vector3.One;
-    public Color color = Color.Red;
-    // Because i'm noob i will use euler
-    // If you use Quaternion it is better, though it gets translated to render matrix anyways
     public Vector3 rotation = Vector3.Zero;
+    public Vector3 size = Vector3.One;
+
+    public Color color = Color.Red;
 
     public void Draw()
     {
         Rlgl.PushMatrix();
 
         Rlgl.Translatef(position.X, position.Y, position.Z);
-        // Z, X, Y
         Rlgl.Rotatef(rotation.Z, 0f, 0f, 1f);
         Rlgl.Rotatef(rotation.X, 1f, 0f, 0f);
         Rlgl.Rotatef(rotation.Y, 0f, 1f, 0f);
@@ -356,12 +355,7 @@ class Program
 {
     // Utility code
     private static readonly Random rand = new();
-    private static Vector3 RandomEuler()
-    {
-        // also noob way of doing this
-        return Vector3.Normalize(new(rand.NextSingle(), rand.NextSingle(), rand.NextSingle())) * 360f;
-    }
-
+    private static Vector3 RandomRotation() => Vector3.Normalize(new(rand.NextSingle(), rand.NextSingle(), rand.NextSingle())) * 360f;
     public static int Wrap(int value, int min, int max)
     {
         int range = max - min;
@@ -370,65 +364,6 @@ class Program
             return min;
         }
         return min + ((((value - min) % range) + range) % range);
-    }
-
-    public static Color FromRGB(float r, float g, float b) => new((byte)((r % 1f) * byte.MaxValue), (byte)((g % 1f) * byte.MaxValue), (byte)((b % 1f) * byte.MaxValue));
-    public static Color HueCycle(float hue)
-    {
-        float r, g, b;
-        hue = Math.Clamp(hue, 0f, 360f);
-
-        float hue2, back, fwd, hueDelta;
-        long hueIndex;
-
-        hue2 = hue;
-        if (hue2 >= 360.0f)
-        {
-            hue2 = 0.0f;
-        }
-
-        hue2 /= 60.0f;
-        hueIndex = (long)hue2;
-        hueDelta = hue2 - hueIndex;
-        back = 1.0f - hueDelta;
-        fwd = hueDelta;
-
-        switch (hueIndex)
-        {
-            case 0:
-                r = 0.8f;
-                g = fwd;
-                b = 0.2f;
-                break;
-            case 1:
-                r = back;
-                g = 0.8f;
-                b = 0.2f;
-                break;
-            case 2:
-                r = 0.2f;
-                g = 0.8f;
-                b = fwd;
-                break;
-            case 3:
-                r = 0.2f;
-                g = back;
-                b = 0.8f;
-                break;
-            case 4:
-                r = fwd;
-                g = 0.2f;
-                b = 0.8f;
-                break;
-            // case 5..:
-            default:
-                r = 0.8f;
-                g = 0.2f;
-                b = back;
-                break;
-        }
-
-        return FromRGB(r, g, b);
     }
 
     public static BXSTweenFloatContext moveXAnim = new(1.4f);
@@ -444,7 +379,7 @@ class Program
     {
         // Config
         Raylib.SetConfigFlags(ConfigFlags.Msaa4xHint);
-        Raylib.InitWindow(800, 480, "Anim");
+        Raylib.InitWindow(512, 512, "Anim");
 
         // Subsystems
         BXSTweenRunner runner = new();
@@ -457,26 +392,32 @@ class Program
             .SetEase(EaseType.QuadInOut)
             .Play();
         rotateRandomAnim
-            .SetupContext(() => cube.rotation, RandomEuler(), v => cube.rotation = v)
+            .SetupContext(() => cube.rotation, RandomRotation(), v => cube.rotation = v)
             .SetLoopCount(-1)
-            .SetLoopRepeatAction(() => rotateRandomAnim.SetStartValue().SetEndValue(RandomEuler()))
+            .SetLoopRepeatAction(() => rotateRandomAnim.SetStartValue().SetEndValue(RandomRotation()))
             .SetLoopType(LoopType.Reset)
             .Play();
         hueAnim
-            .SetupContext(0f, 360f, v => cube.color = HueCycle(v))
+            .SetupContext(0f, 360f, v => cube.color = Raylib.ColorFromHSV(v, 0.8f, 0.8f))
             .SetLoopCount(-1)
             .Play();
+
+        // Resources
+        Font textFnt = Raylib.GetFontDefault(); // or use your custom font as Raylib.LoadFont("./resources/jetbrains_mono.ttf");
 
         // Loop
         float time = 0f;
         float initialDistanceX = cam.Position.Y;
         float initialDistanceZ = cam.Position.Z;
+        float fntSize = 16;
 
         while (!Raylib.WindowShouldClose())
         {
             // Tick
-            runner.Tick(Raylib.GetFrameTime());
-            time += Raylib.GetFrameTime();
+            float dt = Raylib.GetFrameTime();
+
+            time += dt;
+            runner.Tick(dt);
 
             if (Raylib.IsKeyPressed(KeyboardKey.Up))
             {
@@ -488,13 +429,18 @@ class Program
             }
 
             Raylib.BeginDrawing();
+
             Raylib.ClearBackground(Color.White);
 
-            Raylib.DrawText($"Up, Down : Set move tween ease\nCurrent : {moveXAnim.Ease} ({(int)moveXAnim.Ease})", 20, 20, 19, Color.Black);
+            Raylib.DrawTextEx(textFnt, $"Up, Down : Set move tween ease\nCurrent : {moveXAnim.Ease} ({(int)moveXAnim.Ease})", new(20, 20), fntSize, 0, Color.Black);
 
             Raylib.BeginMode3D(cam);
             // Rotate around
-            cam.Position = new(MathF.Cos(time * CamRotateSpeed * MathF.PI) * initialDistanceX, cam.Position.Y, MathF.Sin(time * CamRotateSpeed * MathF.PI) * initialDistanceZ);
+            cam.Position = new(
+                MathF.Cos(time * CamRotateSpeed * MathF.PI) * initialDistanceX,
+                cam.Position.Y,
+                MathF.Sin(time * CamRotateSpeed * MathF.PI) * initialDistanceZ
+            );
 
             cube.Draw();
             Raylib.DrawGrid(10, 1.0f);
@@ -504,10 +450,12 @@ class Program
             Raylib.EndDrawing();
         }
 
+        // Cleanup
         runner.Quit();
         Raylib.CloseWindow();
     }
 }
+
 ```
 ![Raylib Preview](https://github.com/b3x206/BXSTween/blob/resource/resource/raylib-cs-demo.gif?raw=true)
 

@@ -80,7 +80,7 @@ namespace BX.Tweening
 
         /// <summary>
         /// Use a temporary <see cref="IBXSTweenLoop"/> for <see cref="CurrentLoop"/>
-        /// <br>This only sets </br>
+        /// <br>This only sets the <see cref="CurrentLoop"/> and does not set the global loop.</br>
         /// </summary>
         /// <returns>A loop scope to use and dispose.</returns>
         /// <exception cref="ArgumentNullException"/>
@@ -117,8 +117,8 @@ namespace BX.Tweening
         }
 
         /// <summary>
-        /// Whether if the BXSTween needs it's initial <see cref="Initialize(BXSGetterAction{IBXSTweenLoop}, IBXSTweenLogger)"/> called.
-        /// <br>After calling <see cref="Initialize(BXSGetterAction{IBXSTweenLoop}, IBXSTweenLogger)"/> once will make this false.</br>
+        /// Whether if the BXSTween needs it's initial <see cref="Initialize(BXSGetterAction{IBXSTweenLoop})"/> called.
+        /// <br>After calling <see cref="Initialize(BXSGetterAction{IBXSTweenLoop})"/> once will make this false.</br>
         /// </summary>
         public static bool NeedsInitialization => m_GetMainRunnerAction == null;
 
@@ -340,7 +340,7 @@ namespace BX.Tweening
                     deltaTime = loop.FixedUnscaledDeltaTime;
                     break;
             }
-            deltaTime *= ((tween.IgnoreTimeScale ? loop.TimeScale : 1f) * tween.Speed);
+            deltaTime *= ((tween.IgnoreTimeScale ? 1f : loop.TimeScale) * tween.Speed);
 
             // No time has passed
             if (deltaTime < TweenDrainEpsilon)
@@ -358,7 +358,7 @@ namespace BX.Tweening
                 bool isFirstRun = tween.LoopsElapsed == 0;
 
                 // Not very redundant if the callbacks allow changing these.
-                if (((tween.IgnoreTimeScale ? loop.TimeScale : 1f) * tween.Speed) <= TweenDrainEpsilon)
+                if (((tween.IgnoreTimeScale ? 1f : loop.TimeScale) * tween.Speed) <= TweenDrainEpsilon)
                 {
                     break;
                 }
@@ -398,20 +398,32 @@ namespace BX.Tweening
                         {
                             // This will print billion times, maybe add another tier named "trace"?
                             // Eh, it's fine for now (tm)
-                            loop.Logger.Info($"[BXSTween::RunTweenable] Tween '{tween}' is blank ticked because the link is invalid.");
+                            // To avoid the string interp from occuring here, call this conditionally..
+                            if (loop.Logger.LogVerbosity <= IBXSTweenLogger.Verbosity.Info)
+                            {
+                                loop.Logger.Info($"[BXSTween::RunTweenable] Tween '{tween}' is blank ticked because the link is invalid.");
+                            }
+
                             break;
                         }
                         else if (tween.LinkInvalidAction == TickSuspendAction.Pause)
                         {
-                            loop.Logger.Info($"[BXSTween::RunTweenable] Tween '{tween}' is paused because the link is invalid.");
+                            if (loop.Logger.LogVerbosity <= IBXSTweenLogger.Verbosity.Info)
+                            {
+                                loop.Logger.Info($"[BXSTween::RunTweenable] Tween '{tween}' is paused because the link is invalid.");
+                            }
+
                             tween.Pause();
                             break;
                         }
                         else if (tween.LinkInvalidAction == TickSuspendAction.Stop)
                         {
-                            loop.Logger.Info($"[BXSTween::RunTweenable] Tween '{tween}' is stopped because the link is invalid.");
+                            if (loop.Logger.LogVerbosity <= IBXSTweenLogger.Verbosity.Info)
+                            {
+                                loop.Logger.Info($"[BXSTween::RunTweenable] Tween '{tween}' is stopped because the link is invalid.");
+                            }
+
                             tween.Stop();
-                            tween.LastRunFailed = true;
                             break;
                         }
                     }
