@@ -258,6 +258,12 @@ public class WavyCubes : MonoBehaviour
 
 ---
 
+Create a custom context class:
+* Check [BXSTweenFloatContext](./Core/Context/BXSTweenFloatContext.cs) as a basic example.
+* For a class with extra properties and other things, check [BXSTweenQuaternionContext](./Core/Context/BXSTweenQuaternionContext.cs) as a basic example.
+
+---
+
 Embed BXSTween to another framework (`Raylib_cs` shown as an example)
 
 Note that even if included with your project, the [Editor directory](./Editor) and some unity specific code won't compile unless `UNITY_EDITOR` is defined. <br/>
@@ -459,7 +465,7 @@ class Program
 ```
 ![Raylib Preview](https://github.com/b3x206/BXSTween/blob/resource/resource/raylib-cs-demo.gif?raw=true)
 
-### TODO (there are few)
+### TODO
 * [ ] Fix `BXSTweenSequence` implementation to be better.
 * [ ] Write tests, test the code more and fix existing bugs.
 * [ ] Generate DocFX

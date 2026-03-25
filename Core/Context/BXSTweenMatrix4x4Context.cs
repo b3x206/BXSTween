@@ -1,4 +1,6 @@
 using System;
+using System.Runtime.CompilerServices;
+
 #if UNITY_5_6_OR_NEWER
 using UnityEngine;
 #else
@@ -13,7 +15,7 @@ namespace BX.Tweening
     [Serializable]
     public sealed class BXSTweenMatrix4x4Context : BXSTweenContext<Matrix4x4>
     {
-        [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private static float Lerp(float a, float b, float time)
         {
             return ((1f - time) * a) + (time * b);
@@ -34,6 +36,7 @@ namespace BX.Tweening
 #endif
             return result;
         }
+        public override BXSTweenable AsCopy() => AsCopy<BXSTweenMatrix4x4Context>();
 
         /// <summary>
         /// Makes a blank context. Has no duration or anything.

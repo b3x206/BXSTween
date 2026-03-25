@@ -8,39 +8,6 @@ using BX.Tweening.Interop;
 namespace BX.Tweening
 {
     /// <summary>
-    /// Flags used to specify pre defined actions in play.
-    /// <br>This provides convenient actions to do, that are usually set with 
-    /// <see cref="BXSTweenContext{TValue}.SetPlayAction(BXSAction, ValueSetMode)"/></br>
-    /// </summary>
-    [Flags]
-    public enum PlayFlags
-    {
-        None = 0,
-
-        // Things done often in "SetPlayAction"
-        /// <summary>
-        /// This calls the getter to set initial value when <see cref="BXSTweenable.Play"/> is called, if a start value exists.
-        /// </summary>
-        SetStartValue = 1 << 0,
-
-        // Events often cleared in "Play"
-        /// <summary>
-        /// This calls <see cref="BXSTweenable.ClearStopAction"/>, if the following tween has a callback that may effect an object's state.
-        /// <br>This is the event you want to use, if calling <see cref="BXSTweenable.Play"/> will stop your tween and will call the stop callback.</br>
-        /// </summary>
-        ClearStopActions = 1 << 29,
-        /// <summary>
-        /// This calls <see cref="BXSTweenable.ClearEndAction"/>, if the following tween has a callback that may effect an object's state.
-        /// <br>This is more unlikely to be used, as this event is only called when the tween ends without any intervention.</br>
-        /// </summary>
-        ClearEndActions = 1 << 30,
-        /// <summary>
-        /// This calls <see cref="BXSTweenable.ClearAllActions"/>, if the following tween has callbacks that may effect an object's state.
-        /// </summary>
-        ClearAllActions = 1 << 31,
-    }
-
-    /// <summary>
     /// Contains a typed context.
     /// <br>The actual setters are contained here, along with the other values.</br>
     /// <br>This context handles most of the type related things + <see cref="BXSTweenable"/> setters.</br>
@@ -130,19 +97,27 @@ namespace BX.Tweening
         }
 
         // -- Methods
-        public override void CopyFrom<T>(T tweenable)
+        public override void CopySettingsFrom(BXSTweenable tweenable)
         {
-            base.CopyFrom(tweenable);
-            BXSTweenContext<TValue> tweenableAsContext = tweenable as BXSTweenContext<TValue>;
-            if (tweenableAsContext == null)
+            base.CopySettingsFrom(tweenable);
+            if (!(tweenable is BXSTweenContext<TValue> context))
             {
                 return;
             }
 
-            StartValue = tweenableAsContext.StartValue;
-            EndValue = tweenableAsContext.EndValue;
-            GetterAction = tweenableAsContext.GetterAction;
-            SetterAction = tweenableAsContext.SetterAction;
+            StartValue = context.StartValue;
+            EndValue = context.EndValue;
+        }
+        public override void CopyEventsFrom(BXSTweenable tweenable)
+        {
+            base.CopyEventsFrom(tweenable);
+            if (!(tweenable is BXSTweenContext<TValue> context))
+            {
+                return;
+            }
+
+            GetterAction = (BXSGetterAction<TValue>)context.GetterAction?.Clone();
+            SetterAction = (BXSSetterAction<TValue>)context.SetterAction?.Clone();
         }
 
         // - Operators
@@ -375,7 +350,7 @@ namespace BX.Tweening
         /// </summary>
         public BXSTweenContext<TValue> SetClampEasingSetter(bool doClamp)
         {
-            m_Clamp01EasingSetter = doClamp;
+            m_Clamp01Easing = doClamp;
 
             return this;
         }

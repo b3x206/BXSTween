@@ -15,6 +15,7 @@ namespace BX.Tweening
         {
             return Color.LerpUnclamped(a, b, time);
         }
+        public override BXSTweenable AsCopy() => AsCopy<BXSTweenColorContext>();
 
         /// <summary>
         /// Makes a blank context. Has no duration or anything.

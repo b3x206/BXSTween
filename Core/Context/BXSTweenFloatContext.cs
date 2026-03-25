@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 
 namespace BX.Tweening
 {
@@ -12,6 +12,8 @@ namespace BX.Tweening
         {
             return ((1f - time) * a) + (time * b);
         }
+        // ↓ Also do this.. Otherwise the untyped AsCopy will allocate a lot of garbage.
+        public override BXSTweenable AsCopy() => AsCopy<BXSTweenFloatContext>();
 
         /// <summary>
         /// Makes a blank context. Has no duration or anything.

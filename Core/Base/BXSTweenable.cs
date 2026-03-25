@@ -9,9 +9,11 @@ using System.Runtime.CompilerServices;
 #if UNITY_5_6_OR_NEWER
 using ExportAttribute = UnityEngine.SerializeField;
 using Curve = UnityEngine.AnimationCurve;
+using FormerNameAttribute = UnityEngine.Serialization.FormerlySerializedAsAttribute;
 #else
 using ExportAttribute = BX.Tweening.Interop.ExportStubAttribute;
 using Curve = BX.Tweening.Interop.IBXSTweenCurve;
+using FormerNameAttribute = BX.Tweening.Interop.FormerNameAttribute;
 #endif
 
 namespace BX.Tweening
@@ -108,7 +110,7 @@ namespace BX.Tweening
 
                 // this is **VERY IMPORTANT** to not keep stale references on other actors.
                 // - basically decouple this "actor" from this Owner.
-                // - This shouldn't have much of a problem within unity.
+                // - This shouldn't be much of a problem for unity.
                 Stop();
                 CancelDelayedActions();
                 m_Owner = value;
@@ -241,13 +243,13 @@ namespace BX.Tweening
         protected Curve m_EaseCurve;
         /// <summary>
         /// Evaluates the current selected easing curve of this <see cref="BXSTweenable"/>.
-        /// <br>This respects the <see cref="Clamp01EasingSetter"/> and <see cref="UseEaseCurve"/> settings.</br>
+        /// <br>This respects the <see cref="Clamp01Easing"/> and <see cref="UseEaseCurve"/> settings.</br>
         /// </summary>
         public virtual float EvaluateEasing(float t)
         {
             float returnValue = UseEaseCurve ? EaseCurve.Evaluate(t) : BXSTweenEase.EasedValue(t, Ease);
 
-            if (Clamp01EasingSetter)
+            if (Clamp01Easing)
             {
                 returnValue = Math.Clamp(returnValue, 0f, 1f);
             }
@@ -271,12 +273,15 @@ namespace BX.Tweening
         [Export]
         private float m_Speed = 1f;
 
+        [Obsolete("Use Clamp01Easing instead (Clamp01EasingSetter -> Clamp01Easing)")]
+        public bool Clamp01EasingSetter => m_Clamp01Easing;
         /// <summary>
-        /// Whether the easing should be clamped between 0-1.
+        /// Whether the easing values, provided by either <see cref="Ease"/> 
+        /// or <see cref="EaseCurve"/> should be clamped between 0-1.
         /// </summary>
-        public bool Clamp01EasingSetter => m_Clamp01EasingSetter;
-        [Export]
-        protected bool m_Clamp01EasingSetter = false;
+        public bool Clamp01Easing => m_Clamp01Easing;
+        [Export, FormerName("m_Clamp01EasingSetter")]
+        protected bool m_Clamp01Easing = false;
 
         // -- Properties
         /// <summary>
@@ -581,10 +586,18 @@ namespace BX.Tweening
         /// <br>If the Context types don't match the copying must be only done for the base <see cref="BXSTweenable"/>.</br>
         /// </summary>
         /// <typeparam name="T">Type of the tweenable to copy from.</typeparam>
-        public virtual void CopyFrom<T>(T tweenable)
-            where T : BXSTweenable
+        public virtual void CopyFrom(BXSTweenable tweenable)
         {
-            // Copy the base values to this
+            CopySettingsFrom(tweenable);
+            CopyEventsFrom(tweenable);
+        }
+        /// <summary>
+        /// Copies the scalar settings values of <paramref name="tweenable"/> to this method.
+        /// <br>This does not copy events, <b>which includes the getter and the setter if present on the class.</b></br>
+        /// <br>For sequences, it clones all children of <paramref name="tweenable"/>.</br>
+        /// </summary>
+        public virtual void CopySettingsFrom(BXSTweenable tweenable)
+        {
             m_Duration = tweenable.m_Duration;
             m_Delay = tweenable.m_Delay;
             m_LoopCount = tweenable.m_LoopCount;
@@ -592,29 +605,39 @@ namespace BX.Tweening
             m_Ease = tweenable.m_Ease;
             m_EaseCurve = tweenable.m_EaseCurve;
             m_Speed = tweenable.m_Speed;
-            m_Clamp01EasingSetter = tweenable.m_Clamp01EasingSetter;
+            m_Clamp01Easing = tweenable.m_Clamp01Easing;
 
             m_TickType = tweenable.m_TickType;
             m_IgnoreTimeScale = tweenable.m_IgnoreTimeScale;
             Tag = tweenable.Tag;
             m_LinkObject = tweenable.m_LinkObject;
-
-            OnPlayAction = tweenable.OnPlayAction;
-            OnStartAction = tweenable.OnStartAction;
-            OnTickAction = tweenable.OnTickAction;
-            OnLoopRepeatAction = tweenable.OnLoopRepeatAction;
-            OnPauseAction = tweenable.OnPauseAction;
-            OnEndAction = tweenable.OnEndAction;
-            OnStopAction = tweenable.OnStopAction;
-            TickConditionAction = tweenable.TickConditionAction;
-
-            // Other values will be copied by the override casting the values to itself...
+        }
+        /// <summary>
+        /// Copies the events of <paramref name="tweenable"/>.
+        /// <br>This includes the <b>getter and setter if present on the class.</b></br>
+        /// </summary>
+        public virtual void CopyEventsFrom(BXSTweenable tweenable)
+        {
+            OnPlayAction = (BXSAction)tweenable.OnPlayAction?.Clone();
+            OnStartAction = (BXSAction)tweenable.OnStartAction?.Clone();
+            OnTickAction = (BXSAction)tweenable.OnTickAction?.Clone();
+            OnLoopRepeatAction = (BXSAction)tweenable.OnLoopRepeatAction?.Clone();
+            OnPauseAction = (BXSAction)tweenable.OnPauseAction?.Clone();
+            OnEndAction = (BXSAction)tweenable.OnEndAction?.Clone();
+            OnStopAction = (BXSAction)tweenable.OnStopAction?.Clone();
+            TickConditionAction = (BXSTickConditionAction)tweenable.TickConditionAction?.Clone();
         }
 
         /// <summary>
         /// Returns the BXSTweenable as a copy.
+        /// <br>This creates a <i>full clone</i>, if you want to partially clone the tweenable,
+        /// manually create a type of <typeparamref name="T"/> and use the Copy..From events.</br>
         /// </summary>
-        /// <typeparam name="T">The tween type to copy from. This should be equalivent to the type to create a copy from.</typeparam>
+        /// <typeparam name="T">
+        /// The tween type to copy from. This should be equalivent to the type 
+        /// to create a copy from, but it won't break much things outside of a 
+        /// partial copy based off <see cref="BXSTweenable"/>.
+        /// </typeparam>
         public T AsCopy<T>()
             where T : BXSTweenable, new()
         {
@@ -622,6 +645,21 @@ namespace BX.Tweening
             tweenable.CopyFrom(this);
 
             return tweenable;
+        }
+        /// <summary>
+        /// Returns the BXSTweenable as a copy.
+        /// <br>This creates a <i>full clone</i> based on the current object's type.
+        /// If cloning is unfeasible just throw <see cref="NotImplementedException"/>.</br>
+        /// </summary>
+        /// <remarks>
+        /// Because the default implementation uses <see cref="Activator"/>, it is <b>very 
+        /// recommended</b> to override it with something like <see cref="AsCopy{T}()"/> with the final type.
+        /// </remarks>
+        public virtual BXSTweenable AsCopy()
+        {
+            var instance = (BXSTweenable)Activator.CreateInstance(GetType());
+            instance.CopyFrom(this);
+            return instance;
         }
 
         /// <summary>
@@ -907,7 +945,7 @@ namespace BX.Tweening
                 .Append(propertySep).Append(" EaseCurve=").Append(m_EaseCurve)
                 .Append(propertySep).Append(" Speed=").Append(m_Speed)
                 .Append(propertySep).Append(" IgnoreTimeScale=").Append(m_IgnoreTimeScale)
-                .Append(propertySep).Append(" Clamp01Easing=").Append(m_Clamp01EasingSetter)
+                .Append(propertySep).Append(" Clamp01Easing=").Append(m_Clamp01Easing)
                 .Append(propertySep).Append(" TickType=").Append(m_TickType)
                 .Append(propertySep).Append(" Tag=").Append(Tag)
                 .Append(propertySep).Append(" LinkObject=").Append(linkObjectToString)
@@ -963,7 +1001,7 @@ namespace BX.Tweening
             hash.Add(m_Ease);
             hash.Add(m_EaseCurve);
             hash.Add(m_Speed);
-            hash.Add(m_Clamp01EasingSetter);
+            hash.Add(m_Clamp01Easing);
             hash.Add(ActualTickType);
             hash.Add(m_IgnoreTimeScale);
             hash.Add(Tag);

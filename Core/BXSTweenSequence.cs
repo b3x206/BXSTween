@@ -240,22 +240,23 @@ namespace BX.Tweening
                 RunTweensInPriority(CurrentRunPriority);
             }
         }
-        /// <summary>
-        /// Copies the sequence runnable tweens + settings.
-        /// </summary>
-        public override void CopyFrom<T>(T tweenable)
-        {
-            base.CopyFrom(tweenable);
 
-            BXSTweenSequence tweenableSequence = tweenable as BXSTweenSequence;
-            if (tweenableSequence == null)
+        public override void CopySettingsFrom(BXSTweenable tweenable)
+        {
+            base.CopySettingsFrom(tweenable);
+            if (!(tweenable is BXSTweenSequence sequence))
             {
                 return;
             }
 
-            m_RunnableTweens = new List<RunnableTween>(tweenableSequence.m_RunnableTweens);
+            for (int i = 0; i < sequence.m_RunnableTweens.Count; i++)
+            {
+                var rt = sequence.m_RunnableTweens[i];
+                m_RunnableTweens.Add(new RunnableTween(rt.priority, rt.tween.AsCopy()));
+            }
             m_RunnableTweens.Sort();
         }
+        public override BXSTweenable AsCopy() => AsCopy<BXSTweenSequence>();
 
         // -- List Management
         /// <summary>
@@ -264,15 +265,10 @@ namespace BX.Tweening
         /// </summary>
         public BXSTweenable this[int index]
         {
-            get { return m_RunnableTweens[index].tween; }
+            get => m_RunnableTweens[index].tween;
             set
             {
-                if (value == null)
-                {
-                    throw new NullReferenceException(string.Format("[BXTweenSequence::(set)this[{0}]] Given value for index '{0}' is null.", index));
-                }
-
-                m_RunnableTweens[index].tween = value;
+                m_RunnableTweens[index].tween = value ?? throw new ArgumentNullException(nameof(value));
             }
         }
         /// <summary>

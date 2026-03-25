@@ -21,6 +21,7 @@ namespace BX.Tweening
             return Vector2.Lerp(a, b, time);
 #endif
         }
+        public override BXSTweenable AsCopy() => AsCopy<BXSTweenVector2Context>();
 
         /// <summary>
         /// Makes a blank context. Has no duration or anything.
@@ -99,6 +100,7 @@ namespace BX.Tweening
             return Vector3.Lerp(a, b, time);
 #endif
         }
+        public override BXSTweenable AsCopy() => AsCopy<BXSTweenVector3Context>();
 
         /// <summary>
         /// Makes a blank context. Has no duration or anything.
@@ -177,6 +179,7 @@ namespace BX.Tweening
             return Vector4.Lerp(a, b, time);
 #endif
         }
+        public override BXSTweenable AsCopy() => AsCopy<BXSTweenVector4Context>();
 
         /// <summary>
         /// Makes a blank context. Has no duration or anything.

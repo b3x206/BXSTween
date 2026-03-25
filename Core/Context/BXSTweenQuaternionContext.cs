@@ -58,6 +58,19 @@ namespace BX.Tweening
 
             return this;
         }
+        public override BXSTweenable AsCopy() => AsCopy<BXSTweenQuaternionContext>();
+
+        public override void CopySettingsFrom(BXSTweenable tweenable)
+        {
+            base.CopySettingsFrom(tweenable);
+
+            if (!(tweenable is BXSTweenQuaternionContext context))
+            {
+                return;
+            }
+
+            m_UseSlerp = context.m_UseSlerp;
+        }
 
         /// <summary>
         /// Makes a blank context. Has no duration or anything.

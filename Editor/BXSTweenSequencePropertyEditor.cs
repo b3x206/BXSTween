@@ -20,7 +20,7 @@ namespace BX.Tweening.Editor
             $"m_{nameof(BXSTweenable.UseEaseCurve)}",
             $"m_{nameof(BXSTweenable.Ease)}",
             $"m_{nameof(BXSTweenable.EaseCurve)}",
-            $"m_{nameof(BXSTweenable.Clamp01EasingSetter)}",
+            $"m_{nameof(BXSTweenable.Clamp01Easing)}",
             $"m_{nameof(BXSTweenable.Speed)}",
             $"m_{nameof(BXSTweenable.LoopType)}",
         };
