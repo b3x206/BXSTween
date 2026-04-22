@@ -17,10 +17,8 @@ namespace BX.Tweening.Editor
         // "this app can break" IsTextUnicode moment
         protected void CheckRepaint()
         {
-            if (shouldRepaint)
-            {
-                Repaint();
-            }
+            // Always repaint, even if a tween isn't uncollapsed.
+            Repaint();
         }
         private void OnEnable()
         {
@@ -32,16 +30,6 @@ namespace BX.Tweening.Editor
             EditorApplication.update -= CheckRepaint;
         }
 
-        /// <summary>
-        /// Used to filter tweenables, but it is now used as view options.
-        /// </summary>
-        private struct EditorTweensViewOptions
-        {
-            public bool reverseTweensView;
-            public int breakAtTweenCount;
-        }
-        private EditorTweensViewOptions viewOptions;
-
         protected bool shouldRepaint = false;
         private const float TweensScrollAreaHeight = 400;
         private GUIStyle boxStyle;
@@ -50,7 +38,7 @@ namespace BX.Tweening.Editor
         private GUIStyle detailsLabelStyle;
         private GUIStyle buttonStyle;
 
-        // This should improve things a little.. Unfortunately IMGUI is inefficient and I dislike GUIElements for this type "crude" devtool
+        // This should improve things a little.. Unfortunately IMGUI is inefficient (but more efficient than my code) and I dislike GUIElements for this type "crude" devtool
         private static readonly Dictionary<Type, PropertyInfo[]> m_PropertyTypeCache = new();
         private static readonly Dictionary<Type, FieldInfo[]> m_FieldInfoCache = new();
         protected static PropertyInfo[] GetPropertiesFromType(Type type, BindingFlags flags = BindingFlags.Public | BindingFlags.Instance)
@@ -110,8 +98,13 @@ namespace BX.Tweening.Editor
                 fontStyle = FontStyle.BoldAndItalic
             };
         }
-        private int pageIndex = 0;
-        protected const int EntriesPerPage = 100;
+        protected const int MaxEntriesPerPage = 512;
+
+        protected int pageIndex = 0;
+        protected int entriesPerPage = 100;
+        protected bool reverseTweensView;
+        protected int breakAtTweenCount;
+
         private Vector2 tweensListScroll;
         private bool expandFilterDebugTweens = false;
         /// <summary>
@@ -120,8 +113,6 @@ namespace BX.Tweening.Editor
         private readonly List<bool> m_expandedTweens = new List<bool>(65535);
         protected virtual void DrawGUI(IBXSTweenLoop loop)
         {
-            shouldRepaint = false;
-
             // Draw a field for 'm_Script'
             using (EditorGUI.DisabledScope scope = new EditorGUI.DisabledScope(true))
             {
@@ -161,34 +152,35 @@ namespace BX.Tweening.Editor
             }
 
             // Draw filter button/toggle + info text
-            GUILayout.BeginHorizontal();
-            expandFilterDebugTweens = GUILayout.Toggle(expandFilterDebugTweens, "Filter", buttonStyle, GUILayout.Width(70));
-            GUILayout.Label("  -- Click on any box to view details about the tween --  ", miniTextStyle);
-            GUILayout.EndHorizontal();
+            expandFilterDebugTweens = GUILayout.Toggle(expandFilterDebugTweens, "Settings", buttonStyle, GUILayout.Width(70));
             if (expandFilterDebugTweens)
             {
                 EditorGUI.indentLevel += 2;
 
                 // Draw filter tweens area
-                viewOptions.breakAtTweenCount = Mathf.Clamp(EditorGUILayout.IntField(
+                breakAtTweenCount = Mathf.Clamp(EditorGUILayout.IntField(
                     new GUIContent(
                         "Tween Amount To Pause (Break)",
                         "Pause editor after the amount of current tweens that is >= from this value.\nTo stop pausing set this value to 0 or lower."
                     ),
-                    viewOptions.breakAtTweenCount), -1, int.MaxValue
+                    breakAtTweenCount), -1, int.MaxValue
                 );
-                viewOptions.reverseTweensView = EditorGUILayout.Toggle(
+                reverseTweensView = EditorGUILayout.Toggle(
                     new GUIContent(
                         "Reverse Tweens View",
                         "Reverses the current view, so the last tween run is the topmost."
                     ),
-                    viewOptions.reverseTweensView
+                    reverseTweensView
                 );
+                entriesPerPage = Mathf.Clamp(EditorGUILayout.IntField(new GUIContent(
+                    "Entries Per Page",
+                    $"Amount of entries displayed per page. Maximum count is {MaxEntriesPerPage}. Increasing this will cause performance problems."
+                ), entriesPerPage), 1, MaxEntriesPerPage);
 
                 EditorGUI.indentLevel -= 2;
             }
             // Pause editor if the tween amount exceeded
-            if (viewOptions.breakAtTweenCount > 0 && tweens.Count >= viewOptions.breakAtTweenCount)
+            if (breakAtTweenCount > 0 && tweens.Count >= breakAtTweenCount)
             {
                 EditorApplication.isPaused = true;
             }
@@ -198,26 +190,31 @@ namespace BX.Tweening.Editor
             // I give up on the "nice list virtualization", I can't blindly get the GUILayout element sizes
             // (without high perf penalty) and accumulate to a rect. Even if i could, it could shift drastically when the GUI is toggled..
             // Pagination it is. Makes it more usable on larger quantities of tweens instead of this being useless on that situation.
+            GUILayout.BeginHorizontal();
             GUILayout.Label($"Viewing {pageIndex}/{tweens.Count}", miniTextStyle);
+            GUILayout.FlexibleSpace();
+            GUILayout.Label("Click on any box to view details about the tween", miniTextStyle);
+            GUILayout.EndHorizontal();
+
             GUILayout.BeginHorizontal();
             using (EditorGUI.DisabledScope scope = new EditorGUI.DisabledScope(pageIndex <= 0))
                 if (GUILayout.Button("←", GUILayout.Width(20f)))
                 {
-                    pageIndex = Math.Clamp(pageIndex - EntriesPerPage, 0, tweens.Count - 1);
+                    pageIndex = Math.Clamp(pageIndex - entriesPerPage, 0, tweens.Count - 1);
                 }
             GUILayout.FlexibleSpace();
-            pageIndex = Math.Clamp(EditorGUILayout.IntField(pageIndex, GUILayout.Width(40f)), 0, tweens.Count - 1);
+            pageIndex = Math.Clamp(EditorGUILayout.IntField(pageIndex, GUILayout.Width(40f)), 0, Math.Max(0, tweens.Count - 1));
             GUILayout.FlexibleSpace();
-            using (EditorGUI.DisabledScope scope = new EditorGUI.DisabledScope((pageIndex + EntriesPerPage) > tweens.Count))
+            using (EditorGUI.DisabledScope scope = new EditorGUI.DisabledScope((pageIndex + entriesPerPage) > tweens.Count))
                 if (GUILayout.Button("→", GUILayout.Width(20f)))
                 {
-                    pageIndex = Math.Clamp(pageIndex + EntriesPerPage, 0, tweens.Count - 1);
+                    pageIndex = Math.Clamp(pageIndex + entriesPerPage, 0, tweens.Count - 1);
                 }
             GUILayout.EndHorizontal();
             tweensListScroll = GUILayout.BeginScrollView(tweensListScroll, GUILayout.Height(TweensScrollAreaHeight));
-            for (int guiIndex = pageIndex; guiIndex < Math.Min(tweens.Count, pageIndex + EntriesPerPage); guiIndex++)
+            for (int guiIndex = pageIndex; guiIndex < Math.Min(tweens.Count, pageIndex + entriesPerPage); guiIndex++)
             {
-                int tweenIndex = viewOptions.reverseTweensView ? tweens.Count - (guiIndex + 1) : guiIndex;
+                int tweenIndex = reverseTweensView ? tweens.Count - (guiIndex + 1) : guiIndex;
                 BXSTweenable tween = tweens[tweenIndex];
 
                 // Allocate toggles (use 'i' parameter, as it's the only one that goes sequentially)
@@ -244,7 +241,6 @@ namespace BX.Tweening.Editor
 
                 if (m_expandedTweens[guiIndex])
                 {
-                    shouldRepaint = true;
                     // Show more information about the tween
                     // Assume that this type is BXSTweenable, but the type details otherwise is runtime defined
                     // Interfaces always return concrete type : So GetType is used.

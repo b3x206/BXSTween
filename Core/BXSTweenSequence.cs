@@ -298,7 +298,7 @@ namespace BX.Tweening
 
             if (LastPriority <= -1)
             {
-                Owner.Logger.Warn($"[BXSTweenSequence::Join] Tried to join context '{tween}' without any tweens appended. Appending first tween.");
+                Owner.Logger.Info($"[BXSTweenSequence::Join] Tried to join context '{tween}' without any tweens appended. Appending first tween.");
                 Append(tween);
                 return;
             }

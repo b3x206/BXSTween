@@ -663,6 +663,11 @@ namespace BX.Tweening
         }
 
         /// <summary>
+        /// Toggles the swap flag for start and end values.
+        /// </summary>
+        public void ToggleSwapValues() => SwapTargetValues = !SwapTargetValues;
+
+        /// <summary>
         /// Starts the tween.
         /// <br>If the tween is already running, calling this will restart it. This won't call <see cref="Reset"/> on the tween.</br>
         /// <br>The base method calls the events and sets <see cref="IsPlaying"/> to true.</br>
@@ -708,7 +713,7 @@ namespace BX.Tweening
             }
 
             IsPlaying = true;
-            // Maybe I should use HashSet's..
+            // Maybe I should use HashSet's.. Or just check "IsPlaying" state..
             // Tween gets pushed twice to the 'RunningTweens' if 'Play' is called twice on the same frame.
             if (!Owner.RunningTweens.Contains(this))
             {

@@ -258,6 +258,16 @@ public class WavyCubes : MonoBehaviour
 
 ---
 
+Debug View (Unity specific, only in Play Mode)
+* While the game is running, locate the `DontDestroyOnLoad` scene.
+* Locate the GameObject with name `BXSTween`
+
+![Debug Preview](https://github.com/b3x206/BXSTween/blob/resource/resource/debug-view-1.png?raw=true)
+
+Use this to preview currently running tweens in the main context. Clicking on a tween will display it's values and properties, alongside a button on the bottom to Stop the tween.
+
+---
+
 Create a custom context class:
 * Check [BXSTweenFloatContext](./Core/Context/BXSTweenFloatContext.cs) as a basic example.
 * For a class with extra properties and other things, check [BXSTweenQuaternionContext](./Core/Context/BXSTweenQuaternionContext.cs) as a basic example.
