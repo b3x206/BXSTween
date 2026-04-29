@@ -161,13 +161,14 @@ namespace BX.Tweening
             // Always set
             m_LoopType = LoopType.Reset;
 
+            if (!IsPlaying && !IsPaused)
+            {
+                // Reset after calling play for the first time
+                Reset();
+            }
+
             // Play
             base.Play();
-
-            // Reset after calling first play
-            // (Play does not call 'Reset' if not playing tweens,
-            // which with sequences Reset always has to be called)
-            Reset();
         }
         /// <summary>
         /// Stops the sequence. (if running)
@@ -204,7 +205,7 @@ namespace BX.Tweening
         {
             base.ResetPreserveLoop();
 
-            // Do what the sequence did. This may be broken.
+            // Do what the sequence did. This may be broken on yoyo playback.
             // Only set this to very initial value (because it specifies the initial run)
             CurrentRunPriority = -1;
             // These two has to be set according to the first tween sequence state
