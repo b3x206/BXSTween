@@ -526,14 +526,20 @@ namespace BX.Tweening
                     try
                     {
                         tween.OnEndAction?.Invoke();
+                        // If this thing calls "Play", the tween will not start.
+                        // To ensure that it starts, check CurrentElapsed again and again.
                     }
                     catch (Exception e)
                     {
                         loop.Logger.Exception($"[BXSTween::RunTweenable] OnEndAction in tween '{tween}'\n", e);
                     }
 
-                    // deltaTime no longer relevant for this simulation
-                    tween.Stop();
+                    // Check if the elapsed stays the same (tween wasn't played with on the OnEndAction)
+                    if (tween.CurrentElapsed >= 1f)
+                    {
+                        // deltaTime no longer relevant for this simulation
+                        tween.Stop();
+                    }
                     break;
                 }
             }
