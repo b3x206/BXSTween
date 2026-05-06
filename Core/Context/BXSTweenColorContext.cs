@@ -1,7 +1,11 @@
-#if UNITY_5_6_OR_NEWER
+#if UNITY_5_6_OR_NEWER || GODOT
 // ^ Color doesn't exist in .NET STL, a custom impl or Vector4 should be used instead.
 using System;
+#if UNITY_5_6_OR_NEWER
 using UnityEngine;
+#else
+using Godot;
+#endif
 
 namespace BX.Tweening
 {
@@ -9,11 +13,18 @@ namespace BX.Tweening
     /// Contains a context that uses Color.
     /// </summary>
     [Serializable]
-    public sealed class BXSTweenColorContext : BXSTweenContext<Color>
+#if GODOT
+    [GlobalClass]
+#endif
+    public sealed partial class BXSTweenColorContext : BXSTweenContext<Color>
     {
         public override Color Lerp(Color a, Color b, float time)
         {
+#if UNITY_5_6_OR_NEWER
             return Color.LerpUnclamped(a, b, time);
+#else
+            return a.Lerp(b, time);
+#endif
         }
         public override BXSTweenable AsCopy() => AsCopy<BXSTweenColorContext>();
 

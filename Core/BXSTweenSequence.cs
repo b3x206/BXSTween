@@ -19,7 +19,10 @@ namespace BX.Tweening
     ///        ---
     ///        This also creates GC, so if there are many Sequences, we have many problems :/
     [Serializable]
-    public sealed class BXSTweenSequence : BXSTweenable, ICollection<BXSTweenable>, IEnumerable<KeyValuePair<int, BXSTweenable>>
+#if GODOT
+    [Godot.GlobalClass]
+#endif
+    public sealed partial class BXSTweenSequence : BXSTweenable, ICollection<BXSTweenable>, IEnumerable<KeyValuePair<int, BXSTweenable>>
     {
         /// <summary>
         /// A <see cref="BXSTweenable"/> container that has a priority for sequencing.

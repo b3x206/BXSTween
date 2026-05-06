@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 
 namespace BX.Tweening
 {
@@ -6,7 +6,10 @@ namespace BX.Tweening
     /// Contains a context that uses floats.
     /// </summary>
     [Serializable]
-    public sealed class BXSTweenFloatContext : BXSTweenContext<float>
+#if GODOT
+    [Godot.GlobalClass]
+#endif
+    public sealed partial class BXSTweenFloatContext : BXSTweenContext<float>
     {
         public override float Lerp(float a, float b, float time)
         {

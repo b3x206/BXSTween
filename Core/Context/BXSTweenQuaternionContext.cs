@@ -1,12 +1,16 @@
 using System;
 #if UNITY_5_6_OR_NEWER
 using UnityEngine;
+#elif GODOT
+using Godot;
 #else
 using System.Numerics;
 #endif
 
 #if UNITY_5_6_OR_NEWER
 using ExportAttribute = UnityEngine.SerializeField;
+#elif GODOT
+using ExportAttribute = Godot.ExportAttribute;
 #else
 using ExportAttribute = BX.Tweening.Interop.ExportStubAttribute;
 #endif
@@ -17,7 +21,10 @@ namespace BX.Tweening
     /// Contains a context that uses Quaternion.
     /// </summary>
     [Serializable]
-    public sealed class BXSTweenQuaternionContext : BXSTweenContext<Quaternion>
+#if GODOT
+    [GlobalClass]
+#endif
+    public sealed partial class BXSTweenQuaternionContext : BXSTweenContext<Quaternion>
     {
         [Export]
         private bool m_UseSlerp = false;
@@ -37,6 +44,8 @@ namespace BX.Tweening
             {
                 return Quaternion.LerpUnclamped(a, b, time);
             }
+#elif GODOT
+            return a.Slerp(b, time);
 #else
             if (m_UseSlerp)
             {

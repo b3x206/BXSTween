@@ -1,6 +1,8 @@
 using System;
 #if UNITY_5_6_OR_NEWER
 using UnityEngine;
+#elif GODOT
+using Godot;
 #else
 using System.Numerics;
 #endif
@@ -11,12 +13,17 @@ namespace BX.Tweening
     /// Contains a context that uses Vector2.
     /// </summary>
     [Serializable]
-    public sealed class BXSTweenVector2Context : BXSTweenContext<Vector2>
+#if GODOT
+    [GlobalClass]
+#endif
+    public sealed partial class BXSTweenVector2Context : BXSTweenContext<Vector2>
     {
         public override Vector2 Lerp(Vector2 a, Vector2 b, float time)
         {
 #if UNITY_5_6_OR_NEWER
             return Vector2.LerpUnclamped(a, b, time);
+#elif GODOT
+            return a.Lerp(b, time);
 #else
             return Vector2.Lerp(a, b, time);
 #endif
@@ -90,12 +97,17 @@ namespace BX.Tweening
     /// Contains a context that uses Vector3.
     /// </summary>
     [Serializable]
-    public sealed class BXSTweenVector3Context : BXSTweenContext<Vector3>
+#if GODOT
+    [GlobalClass]
+#endif
+    public sealed partial class BXSTweenVector3Context : BXSTweenContext<Vector3>
     {
         public override Vector3 Lerp(Vector3 a, Vector3 b, float time)
         {
 #if UNITY_5_6_OR_NEWER
             return Vector3.LerpUnclamped(a, b, time);
+#elif GODOT
+            return a.Lerp(b, time);
 #else
             return Vector3.Lerp(a, b, time);
 #endif
@@ -169,12 +181,17 @@ namespace BX.Tweening
     /// Contains a context that uses Vector4.
     /// </summary>
     [Serializable]
-    public sealed class BXSTweenVector4Context : BXSTweenContext<Vector4>
+#if GODOT
+    [GlobalClass]
+#endif
+    public sealed partial class BXSTweenVector4Context : BXSTweenContext<Vector4>
     {
         public override Vector4 Lerp(Vector4 a, Vector4 b, float time)
         {
 #if UNITY_5_6_OR_NEWER
             return Vector4.LerpUnclamped(a, b, time);
+#elif GODOT
+            return a.Lerp(b, time);
 #else
             return Vector4.Lerp(a, b, time);
 #endif

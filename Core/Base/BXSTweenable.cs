@@ -10,6 +10,10 @@ using System.Runtime.CompilerServices;
 using ExportAttribute = UnityEngine.SerializeField;
 using Curve = UnityEngine.AnimationCurve;
 using FormerNameAttribute = UnityEngine.Serialization.FormerlySerializedAsAttribute;
+#elif GODOT
+using ExportAttribute = Godot.ExportAttribute;
+using Curve = Godot.Curve;
+using FormerNameAttribute = BX.Tweening.Interop.FormerNameAttribute;
 #else
 using ExportAttribute = BX.Tweening.Interop.ExportStubAttribute;
 using Curve = BX.Tweening.Interop.IBXSTweenCurve;
@@ -69,7 +73,13 @@ namespace BX.Tweening
     /// <br>Any class inheriting from this moves/receives a value from <c>a-&gt;b</c>.</br>
     /// </summary>
     [Serializable]
-    public abstract class BXSTweenable
+#if GODOT
+    [Godot.GlobalClass]
+#endif
+    public abstract partial class BXSTweenable
+#if GODOT
+        : Godot.Resource
+#endif
     {
         // --
         /// <summary>
@@ -247,7 +257,11 @@ namespace BX.Tweening
         /// </summary>
         public virtual float EvaluateEasing(float t)
         {
+#if GODOT
+            float returnValue = UseEaseCurve ? EaseCurve.Sample(t) : BXSTweenEase.EasedValue(t, Ease);
+#else
             float returnValue = UseEaseCurve ? EaseCurve.Evaluate(t) : BXSTweenEase.EasedValue(t, Ease);
+#endif
 
             if (Clamp01Easing)
             {

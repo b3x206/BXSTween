@@ -18,7 +18,7 @@ namespace BX.Tweening
     /// </br>
     /// </summary>
     [Serializable]
-    public abstract class BXSTweenContext<TValue> : BXSTweenable
+    public abstract partial class BXSTweenContext<TValue> : BXSTweenable
     {
         // -- Start/End value
         /// <summary>
@@ -326,6 +326,8 @@ namespace BX.Tweening
         /// </summary>
         /// <param name="curve">The animation curve to set.</param>
         public BXSTweenContext<TValue> SetEaseCurve(AnimationCurve curve)
+#elif GODOT
+        public BXSTweenContext<TValue> SetEaseCurve(Godot.Curve curve)
 #else
         public BXSTweenContext<TValue> SetEaseCurve(IBXSTweenCurve curve)
 #endif

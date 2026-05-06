@@ -13,7 +13,10 @@ namespace BX.Tweening
     /// Contains a context that uses Matrix4x4.
     /// </summary>
     [Serializable]
-    public sealed class BXSTweenMatrix4x4Context : BXSTweenContext<Matrix4x4>
+#if GODOT
+    [Godot.GlobalClass]
+#endif
+    public sealed partial class BXSTweenMatrix4x4Context : BXSTweenContext<Matrix4x4>
     {
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private static float Lerp(float a, float b, float time)
